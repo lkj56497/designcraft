@@ -16,6 +16,7 @@ mod hu;
 mod it;
 mod ja;
 mod ka;
+mod ko;
 mod pl;
 mod pt_br;
 mod ru;
@@ -40,6 +41,7 @@ pub const LANGUAGES: &[(&str, &str)] = &[
     ("ka", "ქართული"),
     ("hu", "Magyar"),
     ("sv", "Svenska"),
+    ("ko", "한국어"),
 ];
 
 /// The interface languages in the order the Preferences picker lists them: English first (the
@@ -101,6 +103,10 @@ fn lookup<'a>(lang: &str, s: &'a str) -> &'a str {
         return HUNGARIAN.get_or_init(|| hu::TABLE.iter().copied().collect()).get(s).copied().unwrap_or(s);
     }
     static SWEDISH: OnceLock<HashMap<&str, &str>> = OnceLock::new();
+    static KOREAN: OnceLock<HashMap<&str, &str>> = OnceLock::new();
+    if lang == "ko" {
+        return KOREAN.get_or_init(|| ko::TABLE.iter().copied().collect()).get(s).copied().unwrap_or(s);
+    }
     if lang == "ar" {
         return ARABIC.get_or_init(|| ar::TABLE.iter().copied().collect()).get(s).copied().unwrap_or(s);
     }

@@ -1,0 +1,42 @@
+# Korean edition: builds the Windows installer (MSI) and portable zip, and publishes them as a
+# GitHub release in this fork. Run it from the Actions tab (Run workflow) or by pushing `korean`.
+name: Korean Windows Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [korean]
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check out craft-fonts (includes the Korean NanumGothic face)
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: b076417b5880bd4154bd22f00695b1d28c6bea83
+          path: craft-fonts
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - name: Install WiX
+        run: dotnet tool install --global wix --version 5.0.2
+      - name: Build and package
+        shell: pwsh
+        env:
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+          CRAFT_FONTS_REQUIRED: "1"
+        run: ./packaging/windows/package.ps1 -Arch x64
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: designcraft-ko-${{ github.run_number }}
+          name: DesignCraft 한국어판 (빌드 ${{ github.run_number }})
+          body: "DesignCraft 한국어판 Windows 설치 파일입니다. 아래 Assets에서 .msi(설치용) 또는 -portable.zip(설치 없이 실행)을 받으세요. 실행 후 언어가 영어라면 설정에서 한국어를 고르세요."
+          files: dist/release/*
